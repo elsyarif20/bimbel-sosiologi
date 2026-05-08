@@ -316,20 +316,33 @@ def panggil_ai(prompt_sistem, prompt_user, temperature=0.4, max_tokens=1024):
     except Exception as e:
         return f"Gagal memuat konten. Error: {str(e)}"
 
-SISTEM_MATERI = """Anda adalah Dosen Sosiologi berpengalaman dengan latar belakang akademik S3 Sosiologi UI.
-Tugas Anda menyusun materi ajar MENDALAM dan KREDIBEL untuk siswa SMA/Kurikulum Merdeka.
+SISTEM_MATERI = """Anda adalah guru Sosiologi SMA yang berpengalaman dan kredibel.
+Tugas: Tulis materi pembelajaran yang JELAS, TERSTRUKTUR, dan MUDAH DIPAHAMI siswa SMA.
 
-ATURAN FORMAT (WAJIB):
-- DILARANG KERAS menggunakan simbol bintang (*) atau tanda pagar (#) untuk format.
-- Gunakan HURUF KAPITAL untuk judul bagian.
-- Gunakan angka (1, 2, 3) atau strip (-) untuk daftar.
-- Gunakan tanda kurung siku untuk sub-judul, contoh: [A. DEFINISI]
+ATURAN FORMAT KETAT:
+1. JANGAN gunakan tanda bintang (*), pagar (#), atau underscore (_) sama sekali.
+2. Gunakan format ini untuk setiap bagian:
+   JUDUL BAGIAN
+   ============
+   Isi penjelasan di sini.
 
-ATURAN ISI:
-- Sertakan minimal 2 TEORI dari sosiolog ternama (nama, tahun, konsep inti).
-- Sertakan minimal 2 CONTOH NYATA dari konteks Indonesia.
-- Gunakan terminologi akademik yang tepat namun mudah dipahami siswa SMA.
-- Akhiri dengan REFLEKSI KRITIS: pertanyaan yang mendorong pemikiran kritis."""
+3. Untuk daftar poin, gunakan: "- " di awal baris.
+4. Untuk sub-poin, gunakan: "  o " di awal baris.
+5. Pisahkan setiap bagian dengan baris kosong.
+
+STRUKTUR WAJIB (tulis PERSIS seperti ini):
+
+A. PENGERTIAN
+B. LANDASAN TEORI
+C. KONSEP KUNCI
+D. CONTOH DI INDONESIA
+E. ISU KONTEMPORER
+F. REFLEKSI KRITIS
+
+PASTIKAN:
+- Setiap bagian ada minimal 3 kalimat penjelasan.
+- Sebutkan nama tokoh sosiologi dan tahunnya di bagian B.
+- Gunakan contoh nyata Indonesia di bagian D."""
 
 SISTEM_KUIS = """Anda adalah penyusun soal Sosiologi berpengalaman, mengacu pada soal UTBK/SNBT dan UN.
 ATURAN FORMAT (WAJIB):
@@ -447,28 +460,22 @@ else:
 
         if buka:
             prompt = (
-                f"Susun materi ajar MENDALAM tentang: '{topik_pilih}' (Bab: {bab_pilih}, {kelas}).\n\n"
-                f"Struktur WAJIB:\n"
-                f"[A. PENGERTIAN DAN RUANG LINGKUP]\n"
-                f"Definisi dari minimal 2 ahli sosiologi (nama, tahun, kutipan konsep).\n\n"
-                f"[B. LANDASAN TEORI]\n"
-                f"Minimal 2 teori sosiologi yang relevan, jelaskan konsep inti dan tokohnya.\n\n"
-                f"[C. KONSEP-KONSEP KUNCI]\n"
-                f"Daftar dan penjelasan istilah/konsep penting.\n\n"
-                f"[D. CONTOH DAN FENOMENA DI INDONESIA]\n"
-                f"Minimal 2 contoh nyata dari konteks sosial Indonesia (bisa ekonomi, budaya, politik).\n\n"
-                f"[E. KETERKAITAN DENGAN ISU KONTEMPORER]\n"
-                f"Hubungkan topik ini dengan isu sosial yang relevan saat ini.\n\n"
-                f"[F. REFLEKSI KRITIS]\n"
-                f"2-3 pertanyaan kritis untuk merangsang pemikiran mendalam siswa."
+                f"Topik: {topik_pilih}\n"
+                f"Bab: {bab_pilih} | Kelas: {kelas}\n\n"
+                f"Tulis materi lengkap mengikuti TEPAT struktur A sampai F yang telah ditentukan. "
+                f"Setiap bagian harus berisi penjelasan yang jelas dan informatif. "
+                f"Pastikan bagian D menyebut contoh nyata dari Indonesia."
             )
-            with st.spinner("🤖 AI sedang menyusun materi akademik mendalam..."):
-                hasil = panggil_ai(SISTEM_MATERI, prompt, max_tokens=2000)
+            with st.spinner("Menyusun materi..."):
+                hasil = panggil_ai(SISTEM_MATERI, prompt, temperature=0.3, max_tokens=1800)
                 st.session_state.teks_materi = hasil
                 st.session_state.topik_aktif = topik_pilih
 
         if st.session_state.teks_materi:
-            st.markdown(f'<div class="materi-box">{st.session_state.teks_materi}</div>', unsafe_allow_html=True)
+            import html as html_lib
+            teks_bersih = html_lib.escape(st.session_state.teks_materi)
+            teks_bersih = teks_bersih.replace("\n", "<br>")
+            st.markdown(f'<div class="materi-box">{teks_bersih}</div>', unsafe_allow_html=True)
 
         if audio_btn and st.session_state.teks_materi:
             with st.spinner("🔊 Membuat audio..."):
