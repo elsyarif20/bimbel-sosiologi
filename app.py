@@ -2,25 +2,29 @@ import streamlit as st
 import requests
 import os
 import io
-from dotenv import load_dotenv
-
 try:
     from gtts import gTTS
     GTTS_OK = True
 except Exception:
     GTTS_OK = False
 
-load_dotenv()
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# Baca API key: st.secrets (Streamlit Cloud) → .env (lokal)
+try:
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+except Exception:
+    from dotenv import load_dotenv
+    load_dotenv()
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 BASE_URL = "https://api.groq.com/openai/v1"
 
 # Model fallback — urutan prioritas dari paling canggih ke paling ringan
+# (llama3-8b-8192 dan llama3-70b-8192 sudah decommissioned per Groq)
 MODEL_FALLBACK = [
     "llama-3.3-70b-versatile",
     "llama-3.1-70b-versatile",
-    "llama3-70b-8192",
     "llama-3.1-8b-instant",
-    "llama3-8b-8192",
+    "gemma2-9b-it",
+    "mixtral-8x7b-32768",
 ]
 
 @st.cache_data(ttl=300)
